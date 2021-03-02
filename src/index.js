@@ -8,7 +8,6 @@ class List {
             id: Date.now(),
             isComplete: false,
         };
-        this.tasks.find((item) => item.text === text);
 
         this.tasks.push(task);
     }
@@ -46,10 +45,14 @@ class ToDoList extends List {
         this.tasks[index].isComplete = true;
 
     }
-    submitTasksToLocalStorage(name, id) {
-        const index = this.getTasksIndexById(id);
+    submitTasksToLocalStorage(name) {
+        const obj = JSON.stringify(this.tasks);
+        localStorage.setItem(name, obj);
+    }
+    readFromLocalStorage(name) {
         this.name = name;
-        localStorage.setItem(name, this.tasks[index].text);
+        const returnObj = JSON.parse(localStorage.getItem(name));
+        return returnObj;
     }
 }
 new ToDoList();
