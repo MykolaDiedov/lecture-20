@@ -1,58 +1,73 @@
-const deleteElement = 1;
 class List {
-    tasks = [];
-
-    addTasks(text) {
-        const task = {
-            text: text,
-            id: Date.now(),
-            isComplete: false,
-        };
-
-        this.tasks.push(task);
-    }
-    deleteTasks(id) {
-        const index = this.getTasksIndexById(id);
-        this.tasks.splice(index, deleteElement);
-    }
-
-    renameTasks(id, text) {
-        const index = this.getTasksIndexById(id);
-
-        this.tasks[index].text = text;
-    }
-    getTasksIndexById(id) {
-        return this.tasks.findIndex((item) => item.id === id);
-    }
-
-}
-class ToDoList extends List {
-    getStatistics() {
-        const result = {
-            total: this.tasks.length,
-        };
-        const completed = this.tasks.filter((i) => i.isComplete).length;
-
-        result.completed = completed;
-        result.inComplete = result.total - completed;
-
-        return result;
-    }
-    setTasksAsComplete(id) {
-
-        const index = this.getTasksIndexById(id);
-
-        this.tasks[index].isComplete = true;
-
-    }
-    submitTasksToLocalStorage(name) {
-        const obj = JSON.stringify(this.tasks);
-        localStorage.setItem(name, obj);
-    }
-    readFromLocalStorage(name) {
+    constructor(name) {
         this.name = name;
-        const returnObj = JSON.parse(localStorage.getItem(name));
-        return returnObj;
+        this.data = this.initData();
+    }
+    add(payload) {
+        const Object = {
+            id: Date.now(),
+            ...payload
+        };
+
+        this.data.push(Object);
+        this.save();
+    }
+    remove(id) {
+        this.data = this.data.filter(e => e.id !== id);
+        this.save();
+    }
+    update(id, payload) {
+        this.data = this.data.map(j => {
+            if(j.id !== id) {
+
+                return j;
+            }
+
+            return {...j, ...payload};
+        });
+        this.save();
+    }
+    save () {
+        const jsonData = JSON.stringify(this.data);
+
+        localStorage.setItem(this.name, jsonData);
+    }
+    initData() {
+        const jsonData = localStorage.getItem(this.name);
+
+        return JSON.parse(jsonData) || [];
     }
 }
-new ToDoList();
+class TotoList extends List {
+
+    add(text) {
+        const note = {
+            isComplete: false,
+            value: text
+        };
+
+        super.add(note);
+    }
+    update(id, text) {
+        super.update(id, {value: text});
+    }
+    setNoteComplete(id) {
+        this.data = this.data.map(j => {
+            if (j.id === id) {
+                j.isComplete = true;
+            }
+
+            return j;
+        });
+        this.save();
+    }
+    get statistic() {
+        const complete = this.data.filter(j => Boolean(j.isComplete)).length;
+
+        return {
+            complete,
+            total: this.data.length
+        };
+    }
+}
+new TotoList('todo');
